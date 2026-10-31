@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#f8f8f6"><title>Dropbeam — Send something</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body><div class="shell"><header><a class="brand" href="/" aria-label="Dropbeam home"><span class="mark" aria-hidden="true">↗</span>Dropbeam<span class="version">Local file sharing</span></a><span class="network"><i></i> On your network</span></header>
+<main><div class="intro"><p class="eyebrow">A LITTLE CLOSER</p><h1>From your PC.<br>To your phone.</h1><p>A quick handoff, over your own Wi-Fi.</p></div>
+<div class="workspace"><section class="sender" aria-label="Files to send"><div class="section-title"><span>Your files</span><span id="total">Nothing selected</span></div>
+<div id="dropzone" class="dropzone"><div class="file-art" aria-hidden="true"><span>↗</span></div><h2>Drop your files here</h2><p>Or choose a few. They stay on your network.</p><button class="primary" id="pick">Choose files <span>＋</span></button><input id="file-input" type="file" multiple hidden><small>Files are copied temporarily on this PC. Up to 20 GB each.</small></div>
+<div id="file-list" class="file-list"></div><p id="progress" class="progress" role="status"></p>
+</section><aside class="receiver"><div class="section-title"><span>Receive on your phone</span><span id="live-label">STANDBY</span></div>
+<div id="idle"><div class="qr-placeholder" aria-hidden="true"><span>⌜</span><span>⌝</span><span>⌞</span><span>⌟</span><div>↗</div></div><h2>Ready when you are.</h2><p>Choose your files to create a transfer.<br>Then scan the code with your camera.</p></div>
+<div id="active" hidden><img id="qr" alt="Scan this QR code with your phone camera" width="240" height="240"><h2>Scan to receive</h2><p id="expiry"></p><input id="share-url" aria-label="Transfer link" readonly><button id="copy" class="text-button">Copy link</button><p id="download-count" class="fine"></p></div>
+<div class="handoff-controls"><label for="address">PC network address</label><select id="address"></select><button id="share" class="primary wide" disabled>Make a QR code <span>↗</span></button><button id="end" class="secondary wide" hidden>End transfer</button></div>
+</aside></div><p id="message" role="status" class="message"></p>
+<details><summary>Phone won’t connect?</summary><p>Connect both devices to the same home network. Your PC can use Ethernet. Try a different PC network address above if you use a VPN or virtual machine. If Windows asks about Node.js, allow access on private networks. Guest Wi-Fi may block device-to-device connections.</p></details>
+</main><footer><span>Made for the short trip.</span><span>Local connection · Unencrypted HTTP</span></footer></div></body></html>

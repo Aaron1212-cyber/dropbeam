@@ -1,0 +1,34 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {randomBytes,createHash} from 'node:crypto';
+import {createDropbeam} from '../server.mjs';
+
+test('real transfers, byte ranges, access control, revocation and expiry',async t=>{
+ const app=await createDropbeam({port:0,lifetime:2000});t.after(()=>app.close());
+ const base=new URL(app.localUrl).origin;
+ const api=(route,options={})=>fetch(base+'/api/admin/'+route,{...options,headers:{Authorization:'Bearer '+app.admin,...options.headers}});
+ assert.equal((await fetch(base+'/api/admin/state')).status,403);
+ assert.equal((await api('state',{headers:{Origin:'http://evil.example'}})).status,403);
+ assert.equal((await fetch(base+'/t/not-a-token/info')).status,404);
+ const payload=randomBytes(12*1024*1024), hash=b=>createHash('sha256').update(b).digest('hex');
+ const upload=await api('upload',{method:'POST',headers:{'X-Filename':encodeURIComponent('holiday 日本 🎉.bin')},body:payload});
+ assert.equal(upload.status,201);const {files}=await upload.json();assert.equal(files[0].size,payload.length);
+ const state=await (await api('state')).json();assert.ok(state.addresses.length,'A LAN adapter is needed for the integration test');
+ const share=async()=>{const res=await api('share?address='+state.addresses[0].address,{method:'POST'});assert.equal(res.status,200);return res.json();};
+ let link=await share();assert.ok(link.qr.startsWith('data:image/png;base64,'));
+ const fileUrl=base+'/t/'+link.id+'/file/'+files[0].id;
+ const download=await fetch(fileUrl);assert.equal(download.status,200);assert.ok(download.headers.get('content-disposition').includes('filename*=UTF-8'));
+ assert.equal(hash(Buffer.from(await download.arrayBuffer())),hash(payload));
+ const range=await fetch(fileUrl,{headers:{Range:'bytes=100-199'}});assert.equal(range.status,206);assert.deepEqual(Buffer.from(await range.arrayBuffer()),payload.subarray(100,200));
+ const suffix=await fetch(fileUrl,{headers:{Range:'bytes=-20'}});assert.deepEqual(Buffer.from(await suffix.arrayBuffer()),payload.subarray(-20));
+ assert.equal((await fetch(fileUrl,{headers:{Range:'bytes=999999999-'}})).status,416);
+ assert.equal((await fetch(base+'/t/'+link.id+'/file/bad')).status,404);
+ await api('end',{method:'POST'});assert.equal((await fetch(fileUrl)).status,410);
+ link=await share();await api('files/'+files[0].id,{method:'DELETE'});
+ assert.equal((await fetch(base+'/t/'+link.id+'/info')).status,410);
+ assert.equal((await api('share?address='+state.addresses[0].address,{method:'POST'})).status,400);
+ await api('upload',{method:'POST',headers:{'X-Filename':'empty.txt'},body:Buffer.alloc(0)});
+ link=await share();const empty=(await (await api('state')).json()).files[0];
+ assert.equal((await (await fetch(base+'/t/'+link.id+'/file/'+empty.id)).arrayBuffer()).byteLength,0);
+ await new Promise(r=>setTimeout(r,2100));assert.equal((await fetch(base+'/t/'+link.id+'/info')).status,410);
+});

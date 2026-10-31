@@ -1,0 +1,1 @@
+{"name":"dropbeam","version":"0.1.0","private":true,"type":"module","scripts":{"start":"node server.mjs --open","test":"node --test","build:exe":"node scripts/build-exe.mjs"},"dependencies":{"qrcode":"^1.5.4"},"engines":{"node":">=22"},"devDependencies":{"esbuild":"^0.28.2","postject":"^1.0.0-alpha.6"}}
